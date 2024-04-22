@@ -1,6 +1,6 @@
-const { decrypt } = require('../helpers/crypto');
-const _ = require('lodash');
-const { logger } = require('@project-sunbird/logger');
+const { decrypt } = require("../helpers/crypto");
+const _ = require("lodash");
+const { logger } = require("@project-sunbird/logger");
 /**
  * Parses string to object
  * @param string
@@ -8,7 +8,7 @@ const { logger } = require('@project-sunbird/logger');
  */
 const parseJson = (string) => {
   try {
-    return JSON.parse(string)
+    return JSON.parse(string);
   } catch (e) {
     return false;
   }
@@ -23,7 +23,7 @@ const delay = (duration = 1000) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve();
-    }, duration)
+    }, duration);
   });
 };
 
@@ -42,7 +42,9 @@ const isValidAndNotEmptyString = (value) => {
  * @returns {boolean}
  */
 var isDate = function (date) {
-  return (new Date(date) !== "Invalid Date" && !isNaN(new Date(date))) ? true : false;
+  return new Date(date) !== "Invalid Date" && !isNaN(new Date(date))
+    ? true
+    : false;
 };
 
 /**
@@ -60,44 +62,48 @@ const isDateExpired = function (toDate, fromDate = Date.now()) {
 
 /**
  * Parse the nested object & convert to flattern object(key, value)
- * @param {JSON object} data 
+ * @param {JSON object} data
  */
-const flattenObject = function(data) {
+const flattenObject = function (data) {
   let result = {};
-  function recurse (cur, prop) {
-      if (Object(cur) !== cur) {
-          result[prop] = cur;
-      } else if (Array.isArray(cur)) {
-           for(let i=0, l=cur.length; i<l; i++)
-               recurse(cur[i], prop + "[" + i + "]");
-          if (l == 0)
-              result[prop] = [];
-      } else {
-          let isEmpty = true;
-          for (let p in cur) {
-              isEmpty = false;
-              recurse(cur[p], prop ? prop+"."+p : p);
-          }
-          if (isEmpty && prop)
-              result[prop] = {};
+  function recurse(cur, prop) {
+    if (Object(cur) !== cur) {
+      result[prop] = cur;
+    } else if (Array.isArray(cur)) {
+      for (let i = 0, l = cur.length; i < l; i++)
+        recurse(cur[i], prop + "[" + i + "]");
+      if (l == 0) result[prop] = [];
+    } else {
+      let isEmpty = true;
+      for (let p in cur) {
+        isEmpty = false;
+        recurse(cur[p], prop ? prop + "." + p : p);
       }
+      if (isEmpty && prop) result[prop] = {};
+    }
   }
   recurse(data, "");
   return result;
-}
+};
 
 /**
-* Verifies request and check exp time
-* @param encryptedData encrypted data to be decrypted
-* @returns {*}
-*/
+ * Verifies request and check exp time
+ * @param encryptedData encrypted data to be decrypted
+ * @returns {*}
+ */
 const decodeNChkTime = (encryptedData) => {
+  console.log(
+    "encryptedData----",
+    encryptedData,
+    "----------------------",
+    decodeURIComponent(encryptedData)
+  );
   const decryptedData = decrypt(parseJson(decodeURIComponent(encryptedData)));
   const parsedData = parseJson(decryptedData);
   if (isDateExpired(parsedData.exp)) {
-    throw new Error('DATE_EXPIRED');
+    throw new Error("DATE_EXPIRED");
   } else {
-    return _.omit(parsedData, ['exp']);
+    return _.omit(parsedData, ["exp"]);
   }
 };
 
@@ -109,13 +115,19 @@ const logError = (req, err, msg) => {
   logger.error({
     URL: req.url,
     body: JSON.stringify(req.body),
-    uuid: _.get(req,'headers.x-msgid'),
-    did:_.get(req,'headers.x-device-id'),
-    msg: '[Portal]: ' + msg,
-    error: JSON.stringify(err)
+    uuid: _.get(req, "headers.x-msgid"),
+    did: _.get(req, "headers.x-device-id"),
+    msg: "[Portal]: " + msg,
+    error: JSON.stringify(err),
   });
-}
+};
 
-module.exports = { parseJson, delay, isDate, 
-  isValidAndNotEmptyString, isDateExpired, 
-  decodeNChkTime, logError};
+module.exports = {
+  parseJson,
+  delay,
+  isDate,
+  isValidAndNotEmptyString,
+  isDateExpired,
+  decodeNChkTime,
+  logError,
+};

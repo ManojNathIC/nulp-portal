@@ -908,7 +908,11 @@ const insertEventRegistration = async (req, res) => {
     consentForm,
     user_consent,
   } = req.body;
-  const encryptedData = encrypt(email);
+  let encryptedData;
+  if (email) {
+    encryptedData = encrypt(email);
+  }
+
   const query = `
     INSERT INTO event_registration (event_id,name, email, designation, organisation, certificate,user_consent, consent_form,user_id)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9) RETURNING *
@@ -1380,7 +1384,7 @@ async function eventReports(req, res) {
           const decryptedEmail = decrypt(item.email);
           const eventName = eventDetail[eventId];
 
-         // Check and fix date format
+          // Check and fix date format
           let dateTimeString = item.date;
 
           // If dateTimeString is not in valid ISO format, attempt to correct it
@@ -1958,7 +1962,6 @@ async function eventCreateWrapper(req, res) {
       },
       data: data,
     };
-console.log(config,"-----------");
     const response = await axios(config);
     return res.send(response.data);
   } catch (error) {
@@ -1985,7 +1988,7 @@ console.log(config,"-----------");
 async function eventUpdateWrapper(req, res) {
   try {
     const data = req.body;
-const eventId=req.query.eventId;
+    const eventId = req.query.eventId;
 
     let config = {
       method: "patch",
@@ -1997,11 +2000,9 @@ const eventId=req.query.eventId;
       },
       data: data,
     };
-console.log(config,"-----------");
     const response = await axios(config);
     return res.send(response.data);
   } catch (error) {
-    console.error(error.response,"$$$$$$$$$$$$$444");
     const statusCode = error.statusCode || 500;
     const errorMessage = error.message || "Internal Server Error";
     res.status(statusCode).send({
@@ -2024,8 +2025,7 @@ console.log(config,"-----------");
 async function eventPublishWrapper(req, res) {
   try {
     const data = req.body;
-const eventId=req.query.eventId;
-console.log(req,"-----------------");
+    const eventId = req.query.eventId;
     let config = {
       method: "post",
       maxBodyLength: Infinity,
@@ -2036,7 +2036,6 @@ console.log(req,"-----------------");
       },
       data: data,
     };
-console.log(config,"-----------");
     const response = await axios(config);
     return res.send(response.data);
   } catch (error) {
@@ -2059,8 +2058,6 @@ console.log(config,"-----------");
     });
   }
 }
-
-
 
 async function eventGetByIdWrapper(req, res) {
   try {
@@ -2120,5 +2117,4 @@ module.exports = {
   eventCreateWrapper,
   eventUpdateWrapper,
   eventPublishWrapper,
-  
 };
